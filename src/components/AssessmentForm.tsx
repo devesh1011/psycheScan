@@ -47,6 +47,7 @@ const questions = [
   "I found it hard to calm down after something upset me.",
   "I feared that I would be &quot;thrown&quot; by some trivial but unfamiliar task.",
   "I was unable to become enthusiastic about anything.",
+  "I found it difficult to tolerate interruptions to what I was doing",
   "I was in a state of nervous tension.",
   "I felt I was pretty worthless.",
   "I was intolerant of anything that kept me from getting on with what I was doing.",
@@ -99,20 +100,12 @@ export function AssessmentForm() {
   };
 
   const calculateResults = () => {
-    const depressionScores = [
-      3, 5, 10, 13, 16, 17, 21, 24, 26, 31, 34, 37, 38, 42,
-    ];
-    const anxietyScores = [2, 4, 7, 9, 15, 19, 20, 23, 25, 28, 30, 36, 40, 41];
-    const stressScores = [1, 6, 8, 11, 12, 14, 18, 22, 27, 29, 32, 33, 35, 39];
 
-    const calculateScore = (indices: number[]) =>
-      indices.reduce((sum, index) => sum + (answers[index - 1] || 0), 0);
+    // const depression = calculateScore(depressionScores);
+    // const anxiety = calculateScore(anxietyScores);
+    // const stress = calculateScore(stressScores);
 
-    const depression = calculateScore(depressionScores);
-    const anxiety = calculateScore(anxietyScores);
-    const stress = calculateScore(stressScores);
-
-    setResults({ depression, anxiety, stress });
+    // setResults({ depression, anxiety, stress });
   };
 
   if (results) {
