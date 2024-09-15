@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Menu } from "lucide-react";
+import Image from "next/image";
+import logo from "@/public/logo.jpeg";
 
 const navItems = [
   { name: "Home", href: "/" },
@@ -21,8 +23,17 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0">
-            <Link href="/" className="text-2xl font-bold text-gray-800">
-              PsycheScan
+            <Link href="/" className="flex items-center">
+              <Image
+                src={logo}
+                alt="PsycheScan Logo"
+                width={40}
+                height={40}
+                className="mr-2 rounded-full"
+              />
+              <span className="text-2xl font-bold text-gray-800">
+                PsycheScan
+              </span>
             </Link>
           </div>
           <div className="hidden sm:block">

@@ -1,11 +1,22 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import logo from "@/public/logo.jpeg";
 
 export default function Home() {
   return (
     <div className="flex items-center justify-center flex-grow bg-gradient-to-b from-blue-100 to-white">
       <div className="flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
         <h1 className="text-5xl sm:text-6xl font-bold text-center text-gray-900 mb-8">
+          <div className="flex fle-grow align-items justify-center">
+            {/* <Image
+              src={logo}
+              alt="PsycheScan Logo"
+              width={150}
+              height={150}
+              className="mr-2"
+            /> */}
+          </div>
           Welcome to PsycheScan
         </h1>
         <p className="text-lg sm:text-xl text-center text-gray-600 mb-8">
