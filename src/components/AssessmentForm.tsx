@@ -14,6 +14,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import axios from "axios";
 
 // DASS-42 questions
 const dassQuestions = [
@@ -76,15 +77,21 @@ const tipiOptions = [
 
 export function AssessmentForm() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [dassAnswers, setDassAnswers] = useState<number[]>(
-    new Array(42).fill(null)
+  const [dassAnswers, setDassAnswers] = useState<(number | null)[]>(
+    new Array(21).fill(null)
   );
-  const [tipiAnswers, setTipiAnswers] = useState<string[]>(
-    new Array(10).fill("")
+  const [tipiAnswers, setTipiAnswers] = useState<(string | null)[]>(
+    new Array(10).fill(null)
   );
+
   const [assessmentStage, setAssessmentStage] = useState<
     "dass" | "tipi" | "results"
   >("dass");
+  const [resultData, setResultData] = useState<{
+    depression: string;
+    anxiety: string;
+    stress: string;
+  } | null>(null);
 
   const handleDassAnswer = (value: number) => {
     const newAnswers = [...dassAnswers];
@@ -110,7 +117,7 @@ export function AssessmentForm() {
       if (currentQuestion < tipiQuestions.length - 1) {
         setCurrentQuestion(currentQuestion + 1);
       } else {
-        setAssessmentStage("results");
+        calculateResults(); // Call API after the last question
       }
     }
   };
@@ -124,32 +131,49 @@ export function AssessmentForm() {
     }
   };
 
-  const calculateDassResults = () => {
-    const depressionScores = [
-      3, 5, 10, 13, 16, 17, 21, 24, 26, 31, 34, 37, 38, 42,
-    ];
-    const anxietyScores = [2, 4, 7, 9, 15, 19, 20, 23, 25, 28, 30, 36, 40, 41];
-    const stressScores = [1, 6, 8, 11, 12, 14, 18, 22, 27, 29, 32, 33, 35, 39];
-
-    const calculateScore = (indices: number[]) =>
-      indices.reduce((sum, index) => sum + (dassAnswers[index - 1] || 0), 0);
-
-    return {
-      depression: calculateScore(depressionScores),
-      anxiety: calculateScore(anxietyScores),
-      stress: calculateScore(stressScores),
-    };
+  // Mapping of severity levels based on the response
+  const severityMapping = (score: number) => {
+    switch (score) {
+      case 0:
+        return "Normal";
+      case 1:
+        return "Mild";
+      case 2:
+        return "Moderate";
+      case 3:
+        return "Severe";
+      case 4:
+        return "Extremely Severe";
+      default:
+        return "Unknown";
+    }
   };
 
-  const calculateTipiResults = () => {
-    // This is a simplified calculation. In a real application, you'd need to reverse score some items and pair them correctly.
-    return {
-      extraversion: (Number(tipiAnswers[0]) + Number(tipiAnswers[5])) / 2,
-      agreeableness: (Number(tipiAnswers[1]) + Number(tipiAnswers[6])) / 2,
-      conscientiousness: (Number(tipiAnswers[2]) + Number(tipiAnswers[7])) / 2,
-      emotionalStability: (Number(tipiAnswers[3]) + Number(tipiAnswers[8])) / 2,
-      openness: (Number(tipiAnswers[4]) + Number(tipiAnswers[9])) / 2,
-    };
+  const calculateResults = async () => {
+    try {
+      const numericTipiAnswers = tipiAnswers.map((answer) => Number(answer));
+      const inputFeatures = [...dassAnswers, ...numericTipiAnswers];
+
+      const response = await axios.post(
+        "https://psychescan-backend.onrender.com/predict/",
+        {
+          features: inputFeatures,
+        }
+      );
+
+      const { depression, anxiety, stress } = response.data;
+
+      // Convert the score to severity
+      setResultData({
+        depression: severityMapping(depression),
+        anxiety: severityMapping(anxiety),
+        stress: severityMapping(stress),
+      });
+
+      setAssessmentStage("results");
+    } catch (error) {
+      console.error("Error making prediction request:", error);
+    }
   };
 
   const renderQuestion = () => {
@@ -166,7 +190,7 @@ export function AssessmentForm() {
           <CardHeader className="space-y-2 px-6 py-8">
             <CardTitle className="text-3xl font-bold">
               {assessmentStage === "dass"
-                ? "DASS-42 Assessment"
+                ? "DASS-21 Assessment"
                 : "TIPI Assessment"}
             </CardTitle>
             <CardDescription className="text-xl">
@@ -180,7 +204,7 @@ export function AssessmentForm() {
                 handleAnswer(assessmentStage === "dass" ? Number(value) : value)
               }
               // Ensure that the value correctly reflects the selected answer for the current question
-              value={answers[currentQuestion]?.toString() || ""}
+              value={answers[currentQuestion]?.toString() || ""} // Convert to string for RadioGroup compatibility
             >
               {options.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2">
@@ -229,8 +253,7 @@ export function AssessmentForm() {
   };
 
   const renderResults = () => {
-    const dassResults = calculateDassResults();
-    const tipiResults = calculateTipiResults();
+    if (!resultData) return <p>Loading...</p>;
 
     return (
       <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -242,26 +265,13 @@ export function AssessmentForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <h3 className="text-lg font-semibold mb-2">DASS-42 Results:</h3>
+            <h3 className="text-lg font-semibold mb-2">DASS-21 Results:</h3>
             <ul className="list-disc list-inside mb-4">
-              <li>Depression: {dassResults.depression}</li>
-              <li>Anxiety: {dassResults.anxiety}</li>
-              <li>Stress: {dassResults.stress}</li>
+              <li>Depression: {resultData.depression}</li>
+              <li>Anxiety: {resultData.anxiety}</li>
+              <li>Stress: {resultData.stress}</li>
             </ul>
-            <h3 className="text-lg font-semibold mb-2">TIPI Results:</h3>
-            <ul className="list-disc list-inside">
-              <li>Extraversion: {tipiResults.extraversion.toFixed(2)}</li>
-              <li>Agreeableness: {tipiResults.agreeableness.toFixed(2)}</li>
-              <li>
-                Conscientiousness: {tipiResults.conscientiousness.toFixed(2)}
-              </li>
-              <li>
-                Emotional Stability: {tipiResults.emotionalStability.toFixed(2)}
-              </li>
-              <li>
-                Openness to Experiences: {tipiResults.openness.toFixed(2)}
-              </li>
-            </ul>
+            {/* TIPI results can go here */}
           </CardContent>
           <CardFooter>
             <p className="text-sm text-gray-500">
