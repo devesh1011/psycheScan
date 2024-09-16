@@ -9,11 +9,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "PsycheScan",
   description: "Psychological assessment tool",
-  icons: [
-    { rel: "icon", url: "/favicon.ico" }, // Correct path for favicon
-    { rel: "icon", url: "/favicon.svg", type: "image/svg+xml" },
-    { rel: "apple-touch-icon", url: "/favicon-32x32.png" },
-  ],
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({

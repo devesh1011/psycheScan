@@ -75,8 +75,17 @@ const tipiOptions = [
   { value: "7", label: "Agree strongly" },
 ];
 
+// Explicitly typing the result data
+interface ResultData {
+  depression: string;
+  anxiety: string;
+  stress: string;
+}
+
 export function AssessmentForm() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
+
+  // Explicitly typing the states for answers
   const [dassAnswers, setDassAnswers] = useState<(number | null)[]>(
     new Array(21).fill(null)
   );
@@ -87,11 +96,8 @@ export function AssessmentForm() {
   const [assessmentStage, setAssessmentStage] = useState<
     "dass" | "tipi" | "results"
   >("dass");
-  const [resultData, setResultData] = useState<{
-    depression: string;
-    anxiety: string;
-    stress: string;
-  } | null>(null);
+
+  const [resultData, setResultData] = useState<ResultData | null>(null);
 
   const handleDassAnswer = (value: number) => {
     const newAnswers = [...dassAnswers];
@@ -117,7 +123,7 @@ export function AssessmentForm() {
       if (currentQuestion < tipiQuestions.length - 1) {
         setCurrentQuestion(currentQuestion + 1);
       } else {
-        calculateResults(); // Call API after the last question
+        calculateResults();
       }
     }
   };
@@ -163,7 +169,6 @@ export function AssessmentForm() {
 
       const { depression, anxiety, stress } = response.data;
 
-      // Convert the score to severity
       setResultData({
         depression: severityMapping(depression),
         anxiety: severityMapping(anxiety),
@@ -181,8 +186,6 @@ export function AssessmentForm() {
       assessmentStage === "dass" ? dassQuestions : tipiQuestions;
     const options = assessmentStage === "dass" ? dassOptions : tipiOptions;
     const answers = assessmentStage === "dass" ? dassAnswers : tipiAnswers;
-    const handleAnswer =
-      assessmentStage === "dass" ? handleDassAnswer : handleTipiAnswer;
 
     return (
       <div className="flex items-center justify-center px-4 sm:px-6 lg:px-8">
@@ -200,94 +203,74 @@ export function AssessmentForm() {
           <CardContent className="px-6">
             <p className="mb-4 text-xl">{questions[currentQuestion]}</p>
             <RadioGroup
-              onValueChange={(value: string) =>
-                handleAnswer(assessmentStage === "dass" ? Number(value) : value)
-              }
-              // Ensure that the value correctly reflects the selected answer for the current question
+              onValueChange={(value) => {
+                if (assessmentStage === "dass") {
+                  handleDassAnswer(Number(value));
+                } else {
+                  handleTipiAnswer(value);
+                }
+              }}
               value={answers[currentQuestion]?.toString() || ""} // Convert to string for RadioGroup compatibility
             >
               {options.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value={option.value.toString()}
-                    id={`option-${option.value}`}
-                  />
-                  <Label htmlFor={`option-${option.value}`}>
-                    {option.label}
-                  </Label>
+                  <RadioGroupItem value={option.value.toString()} />
+                  <Label>{option.label}</Label>
                 </div>
               ))}
             </RadioGroup>
           </CardContent>
-          <CardFooter className="flex justify-between">
+          <CardFooter className="flex justify-between px-6 py-4">
             <Button
+              variant="secondary"
+              size="lg"
               onClick={handlePrevious}
               disabled={currentQuestion === 0 && assessmentStage === "dass"}
-              variant="outline"
             >
-              <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Previous
             </Button>
             <Button
+              size="lg"
               onClick={handleNext}
-              disabled={
-                answers[currentQuestion] === null ||
-                answers[currentQuestion] === ""
-              }
+              disabled={answers[currentQuestion] === null}
             >
-              {currentQuestion === questions.length - 1 &&
-              assessmentStage === "tipi"
-                ? "Finish"
-                : "Next"}{" "}
+              Next
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </CardFooter>
-          <CardFooter>
-            <Progress
-              value={((currentQuestion + 1) / questions.length) * 100}
-              className="w-full"
-            />
-          </CardFooter>
+          <Progress
+            value={(100 * (currentQuestion + 1)) / questions.length}
+            className="h-2 w-full"
+          />
         </Card>
       </div>
     );
   };
 
-  const renderResults = () => {
-    if (!resultData) return <p>Loading...</p>;
-
-    return (
-      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <Card className="max-w-2xl w-full">
-          <CardHeader>
-            <CardTitle>Assessment Results</CardTitle>
-            <CardDescription>
-              Here are your DASS-42 and TIPI results
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <h3 className="text-lg font-semibold mb-2">DASS-21 Results:</h3>
-            <ul className="list-disc list-inside mb-4">
-              <li>Depression: {resultData.depression}</li>
-              <li>Anxiety: {resultData.anxiety}</li>
-              <li>Stress: {resultData.stress}</li>
-            </ul>
-            {/* TIPI results can go here */}
-          </CardContent>
-          <CardFooter>
-            <p className="text-sm text-gray-500">
-              Remember, these assessments are not diagnostic tools. If you have
-              concerns about your mental health or personality, please consult
-              with a qualified mental health professional.
-            </p>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  };
-
-  if (assessmentStage === "results") {
-    return renderResults();
-  }
-
-  return renderQuestion();
+  return (
+    <div>
+      {assessmentStage === "results" ? (
+        <div className="flex items-center justify-center px-4 sm:px-6 lg:px-8">
+          <Card className="w-full max-w-6xl">
+            <CardHeader className="px-6 py-8">
+              <CardTitle className="text-3xl font-bold">
+                Assessment Results
+              </CardTitle>
+              <CardDescription className="text-xl">
+                Here are your results based on your responses.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="px-6">
+              <p className="text-xl">Depression: {resultData?.depression}</p>
+              <p className="text-xl">Anxiety: {resultData?.anxiety}</p>
+              <p className="text-xl">Stress: {resultData?.stress}</p>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        renderQuestion()
+      )}
+    </div>
+  );
 }
