@@ -11,9 +11,7 @@ export default function Home() {
           Welcome to PsycheScan
         </h1>
         <p className="text-lg sm:text-xl text-center text-gray-600 mb-8">
-          PsycheScan is a comprehensive psychological assessment tool that
-          combines the DASS-42 and TIPI assessments to provide insights into
-          your mental health and personality traits.
+        PsycheScan is a user-friendly online platform that utilizes advanced machine learning algorithms to provide a comprehensive evaluation of your mental health and personality. By combining the DASS-21 and TIPI assessments, PsycheScan offers a detailed understanding of your emotional well-being and individual traits.
         </p>
         <Link href="/assessment">
           <Button size="lg" className="text-lg px-8 py-3">
