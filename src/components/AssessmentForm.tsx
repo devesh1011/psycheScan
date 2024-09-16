@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import { useState } from "react";
@@ -13,7 +14,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import axios from "axios";
 
 // DASS-42 questions
@@ -94,7 +95,7 @@ export function AssessmentForm() {
   );
 
   const [assessmentStage, setAssessmentStage] = useState<
-    "dass" | "tipi" | "results"
+    "dass" | "tipi" | "loading" | "results"
   >("dass");
 
   const [resultData, setResultData] = useState<ResultData | null>(null);
@@ -123,6 +124,7 @@ export function AssessmentForm() {
       if (currentQuestion < tipiQuestions.length - 1) {
         setCurrentQuestion(currentQuestion + 1);
       } else {
+        setAssessmentStage("loading");
         calculateResults();
       }
     }
@@ -178,6 +180,8 @@ export function AssessmentForm() {
       setAssessmentStage("results");
     } catch (error) {
       console.error("Error making prediction request:", error);
+      // Handle error state here
+      setAssessmentStage("results"); // or set to an error state
     }
   };
 
@@ -190,8 +194,6 @@ export function AssessmentForm() {
     return (
       <div className="flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <Card className="w-full max-w-2xl">
-          {" "}
-          {/* Set a fixed max width */}
           <CardHeader className="space-y-2 px-6 py-8">
             <CardTitle className="text-3xl font-bold">
               {assessmentStage === "dass"
@@ -203,11 +205,7 @@ export function AssessmentForm() {
             </CardDescription>
           </CardHeader>
           <CardContent className="px-6 h-60 overflow-auto">
-            {" "}
-            {/* Set a fixed height and allow scroll if necessary */}
             <p className="mb-4 text-xl break-words">
-              {" "}
-              {/* Ensure long questions wrap properly */}
               {questions[currentQuestion]}
             </p>
             <RadioGroup
@@ -266,29 +264,51 @@ export function AssessmentForm() {
     );
   };
 
+  const renderLoading = () => (
+    <div className="flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-2xl">
+        <CardContent className="flex flex-col items-center justify-center py-16">
+          <Loader2 className="h-16 w-16 animate-spin text-primary" />
+          <p className="mt-4 text-lg font-medium">Processing your results...</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const renderResults = () => (
+    <div className="flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-6xl">
+        <CardHeader className="px-6 py-8">
+          <CardTitle className="text-3xl font-bold">
+            Assessment Results
+          </CardTitle>
+          <CardDescription className="text-xl">
+            Here are your results based on your responses.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="px-6">
+          <p className="text-xl">Depression: {resultData?.depression}</p>
+          <p className="text-xl">Anxiety: {resultData?.anxiety}</p>
+          <p className="text-xl">Stress: {resultData?.stress}</p>
+        </CardContent>
+        <CardFooter>
+          <p className="text-sm text-gray-500">
+            Remember, this assessment is not a diagnosis. If you're concerned
+            about your mental health, please consult with a qualified mental
+            health professional.
+          </p>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+
   return (
     <div>
-      {assessmentStage === "results" ? (
-        <div className="flex items-center justify-center px-4 sm:px-6 lg:px-8">
-          <Card className="w-full max-w-6xl">
-            <CardHeader className="px-6 py-8">
-              <CardTitle className="text-3xl font-bold">
-                Assessment Results
-              </CardTitle>
-              <CardDescription className="text-xl">
-                Here are your results based on your responses.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="px-6">
-              <p className="text-xl">Depression: {resultData?.depression}</p>
-              <p className="text-xl">Anxiety: {resultData?.anxiety}</p>
-              <p className="text-xl">Stress: {resultData?.stress}</p>
-            </CardContent>
-          </Card>
-        </div>
-      ) : (
-        renderQuestion()
-      )}
+      {assessmentStage === "loading"
+        ? renderLoading()
+        : assessmentStage === "results"
+        ? renderResults()
+        : renderQuestion()}
     </div>
   );
 }
