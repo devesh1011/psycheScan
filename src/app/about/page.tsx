@@ -29,9 +29,9 @@ export default function AboutPage() {
           </p>
 
           <h2>Our Assessments</h2>
-          <h3>DASS-42 (Depression Anxiety Stress Scales)</h3>
+          <h3>DASS-21 (Depression Anxiety Stress Scales)</h3>
           <p>
-            The DASS-42 is a self-report instrument designed to measure the
+            The DASS-21 is a self-report instrument designed to measure the
             three related negative emotional states of depression, anxiety, and
             stress. This 42-item questionnaire provides a comprehensive overview
             of an individual current emotional state.

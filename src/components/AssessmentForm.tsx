@@ -25,7 +25,7 @@ const dassQuestions = [
   "I found it difficult to relax.",
   "I felt that I had nothing to look forward to.",
   "I felt that I was using a lot of nervous energy.",
-  "I felt I wasn&#39;t worth much as a person.",
+  "I felt I wasn't worth much as a person.",
   "I felt that I was rather touchy.",
   "I felt scared without any good reason.",
   "I found it hard to wind down.",
@@ -189,7 +189,9 @@ export function AssessmentForm() {
 
     return (
       <div className="flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <Card className="w-full max-w-6xl">
+        <Card className="w-full max-w-2xl">
+          {" "}
+          {/* Set a fixed max width */}
           <CardHeader className="space-y-2 px-6 py-8">
             <CardTitle className="text-3xl font-bold">
               {assessmentStage === "dass"
@@ -200,8 +202,14 @@ export function AssessmentForm() {
               Question {currentQuestion + 1} of {questions.length}
             </CardDescription>
           </CardHeader>
-          <CardContent className="px-6">
-            <p className="mb-4 text-xl">{questions[currentQuestion]}</p>
+          <CardContent className="px-6 h-60 overflow-auto">
+            {" "}
+            {/* Set a fixed height and allow scroll if necessary */}
+            <p className="mb-4 text-xl break-words">
+              {" "}
+              {/* Ensure long questions wrap properly */}
+              {questions[currentQuestion]}
+            </p>
             <RadioGroup
               onValueChange={(value) => {
                 if (assessmentStage === "dass") {
@@ -210,12 +218,17 @@ export function AssessmentForm() {
                   handleTipiAnswer(value);
                 }
               }}
-              value={answers[currentQuestion]?.toString() || ""} // Convert to string for RadioGroup compatibility
+              value={answers[currentQuestion]?.toString() || ""}
             >
               {options.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2">
-                  <RadioGroupItem value={option.value.toString()} />
-                  <Label>{option.label}</Label>
+                  <RadioGroupItem
+                    id={`option-${option.value}`}
+                    value={option.value.toString()}
+                  />
+                  <Label htmlFor={`option-${option.value}`}>
+                    {option.label}
+                  </Label>
                 </div>
               ))}
             </RadioGroup>
@@ -231,11 +244,16 @@ export function AssessmentForm() {
               Previous
             </Button>
             <Button
-              size="lg"
               onClick={handleNext}
-              disabled={answers[currentQuestion] === null}
+              disabled={
+                answers[currentQuestion] === null ||
+                answers[currentQuestion] === ""
+              }
             >
-              Next
+              {currentQuestion === questions.length - 1 &&
+              assessmentStage === "tipi"
+                ? "Finish"
+                : "Next"}{" "}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </CardFooter>
