@@ -269,7 +269,7 @@ export function AssessmentForm() {
       <Card className="w-full max-w-2xl">
         <CardContent className="flex flex-col items-center justify-center py-16">
           <Loader2 className="h-16 w-16 animate-spin text-primary" />
-          <p className="mt-4 text-lg font-medium">Processing your results...</p>
+          <p className="mt-4 text-lg font-medium">Processing your results...</p><span>Showing results can take upto 1 minute</span>
         </CardContent>
       </Card>
     </div>
